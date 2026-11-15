@@ -24,16 +24,15 @@ jobs:
       FF_KEYSTORE_HASLO: ${{ secrets.KEYSTORE_HASLO }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Android SDK
-        uses: android-actions/setup-android@v3
+      # Android SDK jest już zainstalowany na maszynach GitHuba (ANDROID_HOME).
 
       - name: Gradle
         uses: gradle/actions/setup-gradle@v4
