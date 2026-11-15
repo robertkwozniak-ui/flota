@@ -53,7 +53,7 @@ jobs:
       # się buduje. Takiej wersji nie publikujemy — ma inny podpis.
       - name: Build (wersja testowa)
         if: steps.klucz.outputs.jest == '0'
-        run: gradle --no-daemon assembleDebug -Pff.kod=${{ github.run_number }}
+        run: gradle --no-daemon assembleDebug assembleRelease -Pff.kod=${{ github.run_number }}
 
       - name: Build (wydanie podpisane)
         if: steps.klucz.outputs.jest == '1'
