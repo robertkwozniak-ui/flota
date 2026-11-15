@@ -1,0 +1,99 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+/*
+ * Adres witryny i host linków podajemy z zewnątrz, przy budowaniu:
+ *
+ *   gradle assembleDebug -Pff.adres=https://twojadomena.pl -Pff.host=twojadomena.pl
+ *
+ * Dzięki temu ta sama gałąź kodu buduje aplikację dla dowolnej instalacji
+ * WordPressa — bez grzebania w źródłach.
+ */
+def ffAdres = (project.findProperty('ff.adres') ?: '').toString().replaceAll('/+$', '')
+def ffHost = (project.findProperty('ff.host') ?: '').toString()
+
+if (!ffHost && ffAdres) {
+    ffHost = ffAdres.replaceFirst('^https?://', '').replaceFirst('/.*$', '')
+}
+
+// Numer wersji nadaje CI (kolejny numer przebiegu). Rosnący versionCode to
+// warunek, żeby Android przyjął nową paczkę jako aktualizację.
+def ffKod = (project.findProperty('ff.kod') ?: '1').toString().toInteger()
+def ffAktualizacje = (project.findProperty('ff.aktualizacje') ?: '').toString()
+
+android {
+    namespace 'pl.flota.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "pl.flota.app"
+        minSdk 26
+        targetSdk 34
+        versionCode ffKod
+        versionName "1.0.${ffKod}"
+
+        buildConfigField "String", "ADRES_AKTUALIZACJI", "\"${ffAktualizacje}\""
+
+        // Puste wartości są dopuszczalne: aplikacja poprosi wtedy
+        // o wklejenie linku przy pierwszym uruchomieniu.
+        manifestPlaceholders = [ffHost: ffHost ?: 'brak.invalid']
+        resValue "string", "domyslny_adres", ffAdres
+        resValue "string", "host_strony", ffHost ?: 'brak.invalid'
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    /*
+     * Podpis wydania. Magazyn kluczy leży w repozytorium (podpis/flota.p12),
+     * ale jest zaszyfrowany — bez hasła z sekretu KEYSTORE_HASLO jest
+     * bezużyteczny. Stały klucz to warunek aktualizacji: Android przyjmie
+     * nową wersję tylko wtedy, gdy podpisano ją tym samym kluczem co starą.
+     */
+    def ffHaslo = System.getenv('FF_KEYSTORE_HASLO')
+
+    signingConfigs {
+        if (ffHaslo) {
+            wydanie {
+                storeFile rootProject.file('podpis/flota.p12')
+                storeType 'pkcs12'
+                storePassword ffHaslo
+                keyAlias 'flota'
+                keyPassword ffHaslo
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            if (ffHaslo) {
+                signingConfig signingConfigs.wydanie
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    packaging {
+        resources.excludes += ['META-INF/*.version', 'DebugProbesKt.bin']
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.gms:play-services-location:21.3.0'
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Zgoda na zwykły HTTP. Instalacje bez certyfikatu nadal się zdarzają, a
+    w aplikacji nie jest to taki problem jak w przeglądarce: pozycję bierzemy
+    z usługi systemowej, a nie z API przeglądarki, które na HTTP milczy.
+    Jeżeli witryna ma HTTPS — i powinna mieć — ta zgoda nie jest używana.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

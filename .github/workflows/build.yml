@@ -1,0 +1,98 @@
+name: Build APK
+
+# Każda zmiana na gałęzi main buduje podpisany plik APK i publikuje go jako
+# nowe wydanie. Aplikacje na telefonach same sprawdzają najnowsze wydanie
+# i aktualizują się — nikt nie musi rozsyłać plików.
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore: [ '**.md' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wydanie
+  cancel-in-progress: false
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      FF_KEYSTORE_HASLO: ${{ secrets.KEYSTORE_HASLO }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Czy jest hasło do klucza
+        id: klucz
+        run: |
+          if [ -n "$FF_KEYSTORE_HASLO" ]; then
+            echo "jest=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "jest=0" >> "$GITHUB_OUTPUT"
+            echo "::warning::Brak sekretu KEYSTORE_HASLO — powstanie tylko wersja testowa, bez publikacji aktualizacji."
+          fi
+
+      # Bez hasła: sama kompilacja wersji testowej, żeby było widać, że kod
+      # się buduje. Takiej wersji nie publikujemy — ma inny podpis.
+      - name: Build (wersja testowa)
+        if: steps.klucz.outputs.jest == '0'
+        run: gradle --no-daemon assembleDebug -Pff.kod=${{ github.run_number }}
+
+      - name: Build (wydanie podpisane)
+        if: steps.klucz.outputs.jest == '1'
+        run: gradle --no-daemon assembleRelease -Pff.kod=${{ github.run_number }}
+
+      - name: Pliki wydania
+        run: |
+          mkdir -p wynik
+          KOD=${{ github.run_number }}
+          if [ -f app/build/outputs/apk/release/app-release.apk ]; then
+            cp app/build/outputs/apk/release/app-release.apk wynik/flota.apk
+            SUMA=$(sha256sum wynik/flota.apk | cut -d' ' -f1)
+            printf '{"kod":%s,"nazwa":"1.0.%s","plik":"flota.apk","sha256":"%s"}\n' \
+              "$KOD" "$KOD" "$SUMA" > wynik/wersja.json
+            cat wynik/wersja.json
+          else
+            cp app/build/outputs/apk/debug/app-debug.apk wynik/flota-testowa.apk
+          fi
+          ls -lh wynik
+
+      - name: Plik do pobrania
+        uses: actions/upload-artifact@v4
+        with:
+          name: flota-apk
+          path: wynik/*
+          retention-days: 30
+
+      # Wydanie oznaczone jako najnowsze — to z niego aktualizują się telefony.
+      - name: Publikacja aktualizacji
+        if: steps.klucz.outputs.jest == '1'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Flota firmowa 1.0.${{ github.run_number }}
+          make_latest: 'true'
+          files: |
+            wynik/flota.apk
+            wynik/wersja.json
+          body: |
+            Pierwsza instalacja: pobierz **flota.apk** na telefon i otwórz plik.
+            Kolejne wersje aplikacja pobiera i instaluje sama.

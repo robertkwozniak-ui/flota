@@ -1,0 +1,18 @@
+# Wyniki budowania — powstają w chmurze, nie trzymamy ich w repozytorium.
+build/
+.gradle/
+local.properties
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# Pliki Android Studio (jeśli ktoś kiedyś otworzy projekt lokalnie)
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# System
+.DS_Store

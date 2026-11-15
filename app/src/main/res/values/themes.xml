@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Flota" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/akcent</item>
+        <item name="colorAccent">@color/akcent</item>
+        <item name="android:windowBackground">@color/tlo</item>
+        <item name="android:statusBarColor">@color/tlo</item>
+    </style>
+</resources>

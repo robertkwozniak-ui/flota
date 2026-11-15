@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="tlo">#FF101418</color>
+    <color name="tekst">#FFF4F6F8</color>
+    <color name="tekst_slaby">#FF9AA5B1</color>
+    <color name="akcent">#FF1E88E5</color>
+    <color name="ikona_tlo">#FF0D47A1</color>
+</resources>

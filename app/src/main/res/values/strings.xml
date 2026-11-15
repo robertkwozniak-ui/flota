@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Flota firmowa</string>
+
+    <string name="konfiguracja_opis">Wklej link do ewidencji przebiegu, który dostałeś mailem. Zapamiętamy go — następnym razem aplikacja otworzy go sama.</string>
+    <string name="konfiguracja_hint">https://twojadomena.pl/…</string>
+    <string name="konfiguracja_otworz">Otwórz ewidencję</string>
+    <string name="wersja_aplikacji">Wersja %1$s</string>
+
+    <string name="blad_pusty_adres">Podaj adres</string>
+    <string name="blad_otwarcia">Nie udało się otworzyć tego adresu</string>
+
+    <string name="kanal_nazwa">Nagrywanie trasy</string>
+    <string name="kanal_opis">Powiadomienie widoczne, dopóki trasa jest nagrywana. Bez niego Android wyłączyłby odczyt GPS po zgaszeniu ekranu.</string>
+
+    <string name="powiadomienie_tytul">Trasa nagrywana</string>
+    <string name="powiadomienie_start">Uruchamianie GPS…</string>
+    <string name="powiadomienie_stan">%1$s km · w buforze: %2$d</string>
+
+    <string name="kanal_aktualizacje">Aktualizacje aplikacji</string>
+    <string name="aktualizacja_tytul">Aplikacja zaktualizowana</string>
+    <string name="aktualizacja_tresc">Wersja %1$s. Dotknij, aby otworzyć.</string>
+</resources>
